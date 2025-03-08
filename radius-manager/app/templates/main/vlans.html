@@ -1,0 +1,17 @@
+{% extends "main/index.html" %}
+{% block content %}
+<h2>VLANs for {{ switch.name }}</h2>
+<ul>
+    {% for vlan in vlans %}
+    <li>
+        VLAN {{ vlan.vlan_id }} - {{ vlan.name }}
+        <a href="{{ url_for('main.edit_vlan', id=vlan.id) }}">Edit</a>
+        <form action="{{ url_for('main.delete_vlan', id=vlan.id) }}" method="post" style="display:inline;">
+            <button type="submit">Delete</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+<a href="{{ url_for('main.add_vlan', id=switch.id) }}">Add New VLAN</a>
+<a href="{{ url_for('main.switches') }}">Back to Switches</a>
+{% endblock %}

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <p>Welcome, {{ current_user.username }}!</p>
+    <nav>
+        <a href="{{ url_for('main.switches') }}">Manage Switches</a> |
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </nav>
+    {% block content %}{% endblock %}
+</body>
+</html>

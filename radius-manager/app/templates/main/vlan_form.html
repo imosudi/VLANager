@@ -1,0 +1,23 @@
+{% extends "main/index.html" %}
+{% block content %}
+<h2>{{ title }}</h2>
+<form method="post">
+    {{ form.hidden_tag() }}
+    <div>
+        {{ form.vlan_id.label }}<br>
+        {{ form.vlan_id(size=5) }}
+    </div>
+    <div>
+        {{ form.name.label }}<br>
+        {{ form.name(size=32) }}
+    </div>
+    <div>
+        {{ form.description.label }}<br>
+        {{ form.description() }}
+    </div>
+    <div>
+        {{ form.submit() }}
+    </div>
+</form>
+<a href="{{ url_for('main.switch_vlans', id=switch.id) }}">Back to VLANs</a>
+{% endblock %}

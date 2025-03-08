@@ -1,0 +1,27 @@
+{% extends "main/index.html" %}
+{% block content %}
+<h2>{{ title }}</h2>
+<form method="post">
+    {{ form.hidden_tag() }}
+    <div>
+        {{ form.name.label }}<br>
+        {{ form.name(size=32) }}
+    </div>
+    <div>
+        {{ form.ip_address.label }}<br>
+        {{ form.ip_address(size=32) }}
+    </div>
+    <div>
+        {{ form.secret.label }}<br>
+        {{ form.secret(size=32) }}
+    </div>
+    <div>
+        {{ form.description.label }}<br>
+        {{ form.description() }}
+    </div>
+    <div>
+        {{ form.submit() }}
+    </div>
+</form>
+<a href="{{ url_for('main.switches') }}">Back to Switches</a>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "main/index.html" %}
+{% block content %}
+<h2>MAC Addresses for {{ switch.name }}</h2>
+<ul>
+    {% for mapping in mac_mappings %}
+    <li>
+        {{ mapping.mac_address }} - VLAN: {{ mapping.vlan_id }}
+        <a href="{{ url_for('main.edit_mac', id=mapping.id) }}">Edit</a>
+        <form action="{{ url_for('main.delete_mac', id=mapping.id) }}" method="post" style="display:inline;">
+            <button type="submit">Delete</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+<a href="{{ url_for('main.add_mac', id=switch.id) }}">Add New MAC Address</a>
+<a href="{{ url_for('main.switches') }}">Back to Switches</a>
+{% endblock %}

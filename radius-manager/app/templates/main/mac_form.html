@@ -1,0 +1,23 @@
+{% extends "main/index.html" %}
+{% block content %}
+<h2>{{ title }}</h2>
+<form method="post">
+    {{ form.hidden_tag() }}
+    <div>
+        {{ form.mac_address.label }}<br>
+        {{ form.mac_address(size=20) }}
+    </div>
+    <div>
+        {{ form.vlan_id.label }}<br>
+        {{ form.vlan_id() }}
+    </div>
+    <div>
+        {{ form.description.label }}<br>
+        {{ form.description() }}
+    </div>
+    <div>
+        {{ form.submit() }}
+    </div>
+</form>
+<a href="{{ url_for('main.switch_macs', id=switch.id) }}">Back to MAC Addresses</a>
+{% endblock %}

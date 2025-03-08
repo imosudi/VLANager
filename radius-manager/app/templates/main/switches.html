@@ -1,0 +1,18 @@
+{% extends "main/index.html" %}
+{% block content %}
+<h2>Switches</h2>
+<ul>
+    {% for switch in switches %}
+    <li>
+        {{ switch.name }} ({{ switch.ip_address }})
+        <a href="{{ url_for('main.edit_switch', id=switch.id) }}">Edit</a>
+        <form action="{{ url_for('main.delete_switch', id=switch.id) }}" method="post" style="display:inline;">
+            <button type="submit">Delete</button>
+        </form>
+        <a href="{{ url_for('main.switch_vlans', id=switch.id) }}">VLANs</a>
+        <a href="{{ url_for('main.switch_macs', id=switch.id) }}">MAC Addresses</a>
+    </li>
+    {% endfor %}
+</ul>
+<a href="{{ url_for('main.add_switch') }}">Add New Switch</a>
+{% endblock %}

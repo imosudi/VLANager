@@ -103,3 +103,14 @@ cat > "${PROJECT_DIR}/app/templates/main/mac_form.html" << 'EOF'
 EOF
 
 echo "Flask app structure created successfully in '${PROJECT_DIR}'!"
+
+# Create a Flask application directory
+#mkdir -p ~/radius-manager
+cd ~/radius-manager
+
+# Create Python virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install required Python packages
+pip install flask flask-sqlalchemy flask-login flask-wtf pymysql cryptography

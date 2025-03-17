@@ -1,11 +1,41 @@
+
 # Routes for managing switches, VLANs, and MAC address mappings
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app import db
 from app.main import bp
-from app.models import Switch, Vlan, MacVlanMapping, RadCheck, RadReply, NasClient
-from app.main.forms import SwitchForm, VlanForm, MacAddressForm
+from app.models import User, Switch, Vlan, MacVlanMapping, RadCheck, RadReply, NasClient
+from app.main.forms import SwitchForm, VlanForm, MacAddressForm, RegistrationForm
 import re
+
+#from flask import render_template, redirect, url_for, flash, request
+#from flask_login import login_required, current_user
+#from app import db
+##from app.main import bp
+#from app.models import User
+#from app.main.forms import RegistrationForm
+
+@bp.route('/users/add', methods=['GET', 'POST'])
+@login_required
+def add_user():
+    if not current_user.is_admin:
+        flash('You do not have permission to add users.', 'danger')
+        return redirect(url_for('main.index'))
+
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        
+        # Assign admin role if specified
+        user.is_admin = form.is_admin.data
+
+        db.session.add(user)
+        db.session.commit()
+        flash(f'User {user.username} has been added.', 'success')
+        return redirect(url_for('main.index'))
+    
+    return render_template('main/add_user.html', title='Add User', form=form)
 
 @bp.route('/')
 @bp.route('/index')
@@ -262,3 +292,4 @@ def normalize_mac(mac):
     if len(mac) != 12:
         raise ValueError("Invalid MAC address format")
     return ':'.join(mac[i:i+2] for i in range(0, 12, 2))
+

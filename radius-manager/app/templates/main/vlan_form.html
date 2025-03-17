@@ -1,23 +1,29 @@
 {% extends "main/index.html" %}
+
 {% block content %}
-<h2>{{ title }}</h2>
-<form method="post">
-    {{ form.hidden_tag() }}
-    <div>
-        {{ form.vlan_id.label }}<br>
-        {{ form.vlan_id(size=5) }}
-    </div>
-    <div>
-        {{ form.name.label }}<br>
-        {{ form.name(size=32) }}
-    </div>
-    <div>
-        {{ form.description.label }}<br>
-        {{ form.description() }}
-    </div>
-    <div>
-        {{ form.submit() }}
-    </div>
-</form>
-<a href="{{ url_for('main.switch_vlans', id=switch.id) }}">Back to VLANs</a>
+<div class="container mt-4">
+    <h2 class="mb-4">{{ title }}</h2>
+
+    <form method="post" class="needs-validation" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            {{ form.vlan_id.label(class="form-label") }}
+            {{ form.vlan_id(class="form-control", size=5, placeholder="Enter VLAN ID") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control", size=32, placeholder="Enter VLAN name") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control", rows=3, placeholder="Enter VLAN description") }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+        <a href="{{ url_for('main.switch_vlans', id=switch.id) }}" class="btn btn-secondary">Back to VLANs</a>
+    </form>
+</div>
 {% endblock %}

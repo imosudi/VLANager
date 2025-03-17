@@ -1,17 +1,60 @@
 {% extends "main/index.html" %}
+{% block title %}MAC Addresses: VLANager{% endblock %}
+{% block content_mast %} <h2 class="mb-4">MAC Addresses for <strong>{{ switch.name }}</strong></h2> {% endblock %}
 {% block content %}
-<h2>MAC Addresses for {{ switch.name }}</h2>
-<ul>
-    {% for mapping in mac_mappings %}
-    <li>
-        {{ mapping.mac_address }} - VLAN: {{ mapping.vlan_id }}
-        <a href="{{ url_for('main.edit_mac', id=mapping.id) }}">Edit</a>
-        <form action="{{ url_for('main.delete_mac', id=mapping.id) }}" method="post" style="display:inline;">
-            <button type="submit">Delete</button>
-        </form>
-    </li>
-    {% endfor %}
-</ul>
-<a href="{{ url_for('main.add_mac', id=switch.id) }}">Add New MAC Address</a>
-<a href="{{ url_for('main.switches') }}">Back to Switches</a>
+<div class="container mt-4">
+    
+    
+
+    {% if mac_mappings %}
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>MAC Address</th>
+                <th>VLAN ID</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mapping in mac_mappings %}
+            <tr>
+                <td>{{ mapping.mac_address }}</td>
+                <td>{{ mapping.vlan_id }}</td>
+                <td>
+                    <!-- Edit Button -->
+                    <a href="{{ url_for('main.edit_mac', id=mapping.id) }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    
+                    <!-- Delete Form with Confirmation -->
+                    <form action="{{ url_for('main.delete_mac', id=mapping.id) }}" method="post" class="d-inline" onsubmit="return confirmDelete();">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info">No MAC addresses found for this switch.</div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <a href="{{ url_for('main.add_mac', id=switch.id) }}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Add New MAC Address
+    </a>
+    
+    <a href="{{ url_for('main.switches') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Switches
+    </a>
+</div>
+
+<!-- JavaScript for Delete Confirmation -->
+<script>
+    function confirmDelete() {
+        return confirm("Are you sure you want to delete this MAC address?");
+    }
+</script>
 {% endblock %}

@@ -1,27 +1,41 @@
 {% extends "main/index.html" %}
+{% block title %}Add Switch: VLANager{% endblock %}
+{% block content_mast %}
+<h2 class="mb-4">Add Switch</h2>{% endblock %}
 {% block content %}
-<h2>{{ title }}</h2>
-<form method="post">
-    {{ form.hidden_tag() }}
-    <div>
-        {{ form.name.label }}<br>
-        {{ form.name(size=32) }}
-    </div>
-    <div>
-        {{ form.ip_address.label }}<br>
-        {{ form.ip_address(size=32) }}
-    </div>
-    <div>
-        {{ form.secret.label }}<br>
-        {{ form.secret(size=32) }}
-    </div>
-    <div>
-        {{ form.description.label }}<br>
-        {{ form.description() }}
-    </div>
-    <div>
-        {{ form.submit() }}
-    </div>
-</form>
-<a href="{{ url_for('main.switches') }}">Back to Switches</a>
+<div class="container mt-4">
+
+    <form method="post" class="needs-validation" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control", size=32) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.ip_address.label(class="form-label") }}
+            {{ form.ip_address(class="form-control", size=32) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.secret.label(class="form-label") }}
+            {{ form.secret(class="form-control", size=32) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control") }}
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Save Switch
+            </button>
+            <a href="{{ url_for('main.switches') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Switches
+            </a>
+        </div>
+    </form>
+</div>
 {% endblock %}

@@ -1,6 +1,15 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, TextAreaField, SubmitField, SelectField
-from wtforms.validators import DataRequired, IPAddress, NumberRange
+from wtforms import StringField, IntegerField, TextAreaField, SubmitField, SelectField, PasswordField, BooleanField
+from wtforms.validators import DataRequired, IPAddress, NumberRange, DataRequired, Email, EqualTo
+
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    password2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
+    is_admin = BooleanField('Make Admin')
+    submit = SubmitField('Register')
 
 class SwitchForm(FlaskForm):
     name = StringField('Switch Name', validators=[DataRequired()])

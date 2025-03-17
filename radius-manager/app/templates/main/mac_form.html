@@ -1,23 +1,67 @@
 {% extends "main/index.html" %}
+{% block title %}Add MAC Address: VLANager{% endblock %}
+{% block content_mast %} <h2 class="mb-3">Add MAC Addresses</h2>{% endblock %}
 {% block content %}
-<h2>{{ title }}</h2>
-<form method="post">
-    {{ form.hidden_tag() }}
-    <div>
-        {{ form.mac_address.label }}<br>
-        {{ form.mac_address(size=20) }}
-    </div>
-    <div>
-        {{ form.vlan_id.label }}<br>
-        {{ form.vlan_id() }}
-    </div>
-    <div>
-        {{ form.description.label }}<br>
-        {{ form.description() }}
-    </div>
-    <div>
-        {{ form.submit() }}
-    </div>
-</form>
-<a href="{{ url_for('main.switch_macs', id=switch.id) }}">Back to MAC Addresses</a>
+<div class="container mt-4">
+    <form method="post" class="needs-validation" novalidate id="macForm">
+        {{ form.hidden_tag() }}
+        
+        <div class="mb-3">
+            {{ form.mac_address.label(class="form-label") }}
+            {{ form.mac_address(class="form-control", size=20) }}
+            {% if form.mac_address.errors %}
+                <div class="text-danger">
+                    {% for error in form.mac_address.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.vlan_id.label(class="form-label") }}
+            {{ form.vlan_id(class="form-control") }}
+            {% if form.vlan_id.errors %}
+                <div class="text-danger">
+                    {% for error in form.vlan_id.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control") }}
+            {% if form.description.errors %}
+                <div class="text-danger">
+                    {% for error in form.description.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Submit Button with Loading Indicator -->
+        <button type="submit" class="btn btn-success" id="submitButton">
+            <span id="submitText">Save MAC Address</span>
+            <span id="loadingSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+
+        <!-- Back Button with Icon -->
+        <a href="{{ url_for('main.switch_macs', id=switch.id) }}" class="btn btn-outline-secondary ms-2">
+            <i class="fas fa-arrow-left"></i> Back to MAC List
+        </a>
+    </form>
+</div>
+
+<!-- JavaScript for Submit Button Feedback -->
+<script>
+    document.getElementById("macForm").addEventListener("submit", function() {
+        let submitButton = document.getElementById("submitButton");
+        document.getElementById("submitText").textContent = "Saving...";
+        document.getElementById("loadingSpinner").classList.remove("d-none");
+        submitButton.disabled = true;
+    });
+</script>
 {% endblock %}

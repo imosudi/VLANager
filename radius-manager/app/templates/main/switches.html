@@ -1,18 +1,63 @@
 {% extends "main/index.html" %}
+{% block title %}Switches: VLANager{% endblock %}
+{% block content_mast %}<h2 class="mb-3">Switches</h2>{% endblock %}
 {% block content %}
-<h2>Switches</h2>
-<ul>
-    {% for switch in switches %}
-    <li>
-        {{ switch.name }} ({{ switch.ip_address }})
-        <a href="{{ url_for('main.edit_switch', id=switch.id) }}">Edit</a>
-        <form action="{{ url_for('main.delete_switch', id=switch.id) }}" method="post" style="display:inline;">
-            <button type="submit">Delete</button>
-        </form>
-        <a href="{{ url_for('main.switch_vlans', id=switch.id) }}">VLANs</a>
-        <a href="{{ url_for('main.switch_macs', id=switch.id) }}">MAC Addresses</a>
-    </li>
-    {% endfor %}
-</ul>
-<a href="{{ url_for('main.add_switch') }}">Add New Switch</a>
+<div class="container mt-4">
+    
+
+    {% if switches %}
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                <th>IP Address</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for switch in switches %}
+            <tr>
+                <td>{{ switch.name }}</td>
+                <td>{{ switch.ip_address }}</td>
+                <td>
+                    <!-- Edit Button -->
+                    <a href="{{ url_for('main.edit_switch', id=switch.id) }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+
+                    <!-- Delete Form with Confirmation -->
+                    <form action="{{ url_for('main.delete_switch', id=switch.id) }}" method="post" class="d-inline" onsubmit="return confirmDelete();">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </form>
+
+                    <!-- VLAN & MAC Address Links -->
+                    <a href="{{ url_for('main.switch_vlans', id=switch.id) }}" class="btn btn-info btn-sm">
+                        <i class="fas fa-network-wired"></i> VLANs
+                    </a>
+                    <a href="{{ url_for('main.switch_macs', id=switch.id) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-list"></i> MAC Addresses
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info">No switches found.</div>
+    {% endif %}
+
+    <!-- Add New Switch Button -->
+    <a href="{{ url_for('main.add_switch') }}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Add New Switch
+    </a>
+</div>
+
+<!-- JavaScript for Delete Confirmation -->
+<script>
+    function confirmDelete() {
+        return confirm("Are you sure you want to delete this switch?");
+    }
+</script>
 {% endblock %}

@@ -1,9 +1,9 @@
 #!/bin/bash
 # updated-mysql-freeradius-setup.sh
 # This script installs and configures FreeRADIUS with MySQL on Ubuntu 24.04.
-# It sets up the FreeRADIUS MySQL database, imports the schema,
-# creates extra tables for switch/VLAN mappings, configures the SQL module,
-# sets up a MAC-based VLAN assignment policy, and ensures the required policy module is enabled.
+# It sets up the FreeRADIUS MySQL database, imports the schema, creates extra
+# tables for switch/VLAN mappings, configures the SQL module, installs a MAC-based VLAN policy,
+# and creates a minimal policy module so that policy.d/mac_policy is valid.
 
 set -e
 
@@ -123,8 +123,14 @@ echo "=== Inserting mac_auth into the authorize section in sites-enabled/default
 sudo sed -i '/authorize {/a \    mac_auth' /etc/freeradius/3.0/sites-enabled/default
 
 echo "=== Ensuring the 'policy' module is enabled ==="
+# Create a minimal policy module file that defines a 'policy' block.
 if [ ! -f /etc/freeradius/3.0/mods-available/policy ]; then
-    echo "# Minimal policy configuration" | sudo tee /etc/freeradius/3.0/mods-available/policy > /dev/null
+    sudo tee /etc/freeradius/3.0/mods-available/policy > /dev/null <<'EOF'
+policy policy {
+    # Minimal policy configuration for FreeRADIUS.
+    # This module acts as a placeholder to allow policy files in policy.d (like mac_policy) to reference "policy".
+}
+EOF
 fi
 if [ ! -f /etc/freeradius/3.0/mods-enabled/policy ]; then
     sudo ln -s /etc/freeradius/3.0/mods-available/policy /etc/freeradius/3.0/mods-enabled/policy

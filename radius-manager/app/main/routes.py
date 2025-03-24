@@ -1,5 +1,6 @@
 
 # Routes for managing switches, VLANs, and MAC address mappings
+import time
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app import db
@@ -7,6 +8,15 @@ from app.main import bp
 from app.models import User, Switch, Vlan, MacVlanMapping, RadCheck, RadReply, NasClient
 from app.main.forms import SwitchForm, VlanForm, MacAddressForm, RegistrationForm
 import re
+#from pysnmp.hlapi.asyncio import getCmd
+from pysnmp.hlapi.asyncio import getCmd, SnmpEngine, CommunityData, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity
+
+import asyncio
+from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, UdpTransportTarget, ContextData, getCmd, ObjectType, ObjectIdentity
+
+#import asyncio
+from pysnmp.hlapi import SnmpEngine, nextCmd, CommunityData, UdpTransportTarget, ContextData, getCmd, ObjectType, ObjectIdentity
+
 
 #from flask import render_template, redirect, url_for, flash, request
 #from flask_login import login_required, current_user
@@ -48,7 +58,17 @@ def index():
 @login_required
 def switches():
     switches = Switch.query.all()
+    
+    for switch in switches:
+        print(switch.ip_address);#time.sleep(300)
+        #switch.is_online = is_switch_online_snmp(switch.ip_address)
+        if 1==1: #try:
+            switch.is_online = is_switch_online_snmp(switch.ip_address)
+            print("switch.is_online: ", switch.is_online)
+        else: #except:
+            pass
     return render_template('main/switches.html', title='Switches', switches=switches)
+
 
 @bp.route('/switch/add', methods=['GET', 'POST'])
 @login_required
@@ -292,4 +312,134 @@ def normalize_mac(mac):
     if len(mac) != 12:
         raise ValueError("Invalid MAC address format")
     return ':'.join(mac[i:i+2] for i in range(0, 12, 2))
+
+
+def is_switch_online_snmp(ip_address, community="quantum_net"):
+    """Checks if a switch is online via SNMP."""
+    
+    iterator = getCmd(
+        SnmpEngine(),
+        CommunityData(community, mpModel=1),  # Use SNMP v2c
+        UdpTransportTarget((ip_address, 161), timeout=2.0, retries=1),
+        ContextData(),
+        ObjectType(ObjectIdentity('1.3.6.1.2.1.1.0'))  # Use raw OID instead of MIB
+    )
+
+    
+    errorIndication, errorStatus, errorIndex, varBinds = next(iterator)
+
+    if errorIndication:
+            print(f"🔴 SNMP Error for {ip_address}: {errorIndication}")
+            return False
+    elif errorStatus:
+            print(f"⚠️ SNMP Response Error for {ip_address}: {errorStatus.prettyPrint()}")
+            return False
+    else:
+            print(f"🟢 SNMP Response OK for {ip_address}: {varBinds[0]}")
+            return True
+
+    '''except Exception as e:
+        print(f"❌ SNMP Query failed for {ip_address}: {e}")
+        return False
+'''
+
+
+
+OIDS = {
+    "names": "1.3.6.1.4.1.9.9.46.1.3.1.1.4",   # VLAN Names
+    "status": "1.3.6.1.4.1.9.9.46.1.3.1.1.3",  # VLAN Status (1=Active, 2=Inactive)
+    "type": "1.3.6.1.4.1.9.9.46.1.3.1.1.14",   # VLAN Type
+    "ports": "1.3.6.1.2.1.17.7.1.4.3.1.2",     # VLAN Ports
+    "routing": "1.3.6.1.4.1.9.9.46.1.3.1.1.18" # VLAN Routing (1=Enabled, 2=Disabled)
+}
+
+def snmp_walk(ip, oid, community="quantum_net"):
+    """Perform an SNMP walk to retrieve VLAN information."""
+    results = []
+    iterator = nextCmd(
+        SnmpEngine(),
+        CommunityData(community, mpModel=1),  # Use SNMP v2c
+        UdpTransportTarget((ip, 161), timeout=2.0, retries=1),
+        ContextData(),
+        ObjectType(ObjectIdentity(oid)),
+        lexicographicMode=False  # Stop after last OID in the subtree
+    )
+
+    for errorIndication, errorStatus, errorIndex, varBinds in iterator:
+        if errorIndication:
+            print(f"❌ SNMP Error: {errorIndication}")
+            return None
+        elif errorStatus:
+            print(f"⚠️ SNMP Response Error: {errorStatus.prettyPrint()}")
+            return None
+        else:
+            for varBind in varBinds:
+                results.append((str(varBind[0]), str(varBind[1])))
+
+    return results
+
+@bp.route("/vlans/<ip>")
+def get_vlans(ip):
+    """Fetch VLAN list from a Cisco Catalyst switch."""
+    vlan_names_oid = "1.3.6.1.4.1.9.9.46.1.3.1.1.4"
+    vlan_status_oid = "1.3.6.1.4.1.9.9.46.1.3.1.1.3"
+
+    vlan_names = snmp_walk(ip, vlan_names_oid)
+    vlan_statuses = snmp_walk(ip, vlan_status_oid)
+
+    if vlan_names is None or vlan_statuses is None:
+        return jsonify({"error": "SNMP query failed"}), 500
+
+    vlans = []
+    for i in range(len(vlan_names)):
+        vlan_id = vlan_names[i][0].split(".")[-1]  # Extract VLAN ID
+        vlan_name = vlan_names[i][1]
+        vlan_status = "active" if vlan_statuses[i][1] == "1" else "inactive"
+
+        if vlan_status == "active" :
+            vlans.append({"id": vlan_id, "name": vlan_name, "status": vlan_status})
+
+    return jsonify({"vlans": vlans})
+
+
+@bp.route("/vlans2/<ip>")
+def get_vlans2(ip):
+    """Fetch VLAN list from a Cisco switch and dynamically filter VLANs based on characteristics."""
+    vlan_data = {key: snmp_walk(ip, oid) for key, oid in OIDS.items()}
+
+    # Check if any SNMP query failed
+    if any(vlan_data[key] is None for key in OIDS):
+        return jsonify({"error": "SNMP query failed"}), 500
+
+    vlans = []
+    num_vlans = len(vlan_data["names"])
+
+    for i in range(num_vlans):
+        vlan_id = vlan_data["names"][i][0].split(".")[-1]
+        vlan_name = vlan_data["names"][i][1]
+        vlan_status = "active" if vlan_data["status"][i][1] == "1" else "inactive"
+        
+        # ✅ Handle missing data using `.get()`
+        vlan_type = vlan_data.get("type", [("", "Unknown")])[i][1] if i < len(vlan_data.get("type", [])) else "Unknown"
+        vlan_ports = vlan_data.get("ports", [("", "None")])[i][1] if i < len(vlan_data.get("ports", [])) else "None"
+        vlan_routing = "Enabled" if vlan_data.get("routing", [("", "2")])[i][1] == "1" else "Disabled"
+
+        # **🔹 Dynamic Filtering Rules**
+        if (
+            vlan_status == "active" and        # Only Active VLANs
+            "Network" in vlan_name and         # VLANs with "Network" in Name
+            vlan_routing == "Enabled" and      # Only Routed VLANs
+            vlan_ports not in ["", "None"]     # VLANs that have Ports Assigned
+        ):
+            vlans.append({
+                "id": vlan_id,
+                "name": vlan_name,
+                "status": vlan_status,
+                "type": vlan_type,
+                "ports": vlan_ports,
+                "routing": vlan_routing
+            })
+
+    return jsonify({"vlans": vlans})
+
 

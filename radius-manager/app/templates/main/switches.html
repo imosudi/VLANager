@@ -12,6 +12,7 @@
                 <th>Name</th>
                 <th>IP Address</th>
                 <th>Actions</th>
+                <th>Status</t>
             </tr>
         </thead>
         <tbody>
@@ -39,6 +40,13 @@
                     <a href="{{ url_for('main.switch_macs', id=switch.id) }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-list"></i> MAC Addresses
                     </a>
+                </td>
+                <td>
+                    {% if switch.is_online %}
+                        <span class="badge bg-success">Online</span>
+                    {% else %}
+                        <span class="badge bg-danger">Offline</span>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}

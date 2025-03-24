@@ -295,4 +295,4 @@ python3 -m venv venv
 source venv/bin/activate
 
 # Install required Python packages
-pip install flask flask-sqlalchemy flask-login flask-wtf mysql-connector-python gunicorn pymysql flask-Migrate email-validator flask_moment cryptography
+pip install flask flask-sqlalchemy flask-login flask-wtf mysql-connector-python gunicorn pymysql flask-Migrate email-validator flask_moment cryptography pysnmp
